@@ -30,7 +30,6 @@ body {
     background-position: center;
 }
 
-/* ケーキを並べる棚 */
 .shelf {
     position: absolute;
     left: 10%;
@@ -43,14 +42,12 @@ body {
     justify-items: center;
 }
 
-/* ケーキ画像 */
 .shelf img {
     width: 100%;
     height: 100%;
     object-fit: contain;
 }
 
-/* 3段の位置 */
 #topShelf {
     top: 22%;
 }
@@ -63,7 +60,6 @@ body {
     top: 66%;
 }
 
-/* ケーキを作るボタン */
 #drawButton {
     position: absolute;
     right: 12px;
@@ -86,9 +82,7 @@ body {
 <div id="shop">
 
     <div class="shelf" id="topShelf"></div>
-
     <div class="shelf" id="middleShelf"></div>
-
     <div class="shelf" id="bottomShelf"></div>
 
     <button id="drawButton"
@@ -98,33 +92,63 @@ body {
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 
-// ローカルのケーキ画像15枚を読み込む
-for (let i = 1; i <= 15; i++) {
+const SUPABASE_URL = "https://yapohmzbgojtaygfceel.supabase.co";
 
-    const cake = document.createElement("img");
+const SUPABASE_KEY = "sb_publishable_LzzA7XlGG4Q6qGQDpf8_mA_FZepVODX";
 
-    const number = String(i).padStart(2, "0");
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-    cake.src = "cake/cake" + number + ".png";
+async function loadCakes() {
 
-    cake.alt = "ケーキ" + i;
+    const { data, error } = await supabase
+        .from("cake")
+        .select("slot,image_path")
+        .order("slot");
 
-    cake.onerror = function() {
-        console.error("画像が見つかりません:", cake.src);
-    };
-
-    if (i <= 5) {
-        document.getElementById("topShelf").appendChild(cake);
+    if (error) {
+        console.error("ケーキの読み込みエラー:", error);
+        return;
     }
-    else if (i <= 10) {
-        document.getElementById("middleShelf").appendChild(cake);
-    }
-    else {
-        document.getElementById("bottomShelf").appendChild(cake);
-    }
+
+    const shelves = [
+        document.getElementById("topShelf"),
+        document.getElementById("middleShelf"),
+        document.getElementById("bottomShelf")
+    ];
+
+    shelves.forEach(shelf => shelf.innerHTML = "");
+
+    data.forEach(item => {
+
+        const cake = document.createElement("img");
+
+        cake.src =
+            SUPABASE_URL +
+            "/storage/v1/object/public/cake-images/" +
+            item.image_path;
+
+        cake.alt = "ケーキ";
+
+        cake.onerror = function() {
+            console.error("ケーキ画像を読み込めません:", cake.src);
+        };
+
+        const shelfIndex = Math.floor((item.slot - 1) / 5);
+
+        if (shelfIndex >= 0 && shelfIndex < 3) {
+            shelves[shelfIndex].appendChild(cake);
+        }
+    });
 }
+
+loadCakes();
 
 </script>
 
