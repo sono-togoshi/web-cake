@@ -100,14 +100,14 @@ const SUPABASE_URL = "https://yapohmzbgojtaygfceel.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_LzzA7XlGG4Q6qGQDpf8_mA_FZepVODX";
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+const supabaseClient = window.supabase.createClient(
+    supabase_URL,
+    supabase_KEY
 );
 
 async function loadCakes() {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from("cake")
         .select("slot,image_path")
         .order("slot");
